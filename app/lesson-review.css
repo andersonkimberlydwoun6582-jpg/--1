@@ -1,0 +1,26 @@
+.lesson-review {
+  margin-top: 14px;
+  padding: 20px;
+  border: 1px solid #d8e7dc;
+  border-radius: 10px;
+  background: #f3f8f4;
+}
+
+.review-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.review-head h3 { margin: 0; font-size: 16px; }
+.review-tag { background: #dfeee4; color: #347355; border-radius: 5px; padding: 5px 7px; font-size: 10px; white-space: nowrap; }
+.review-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 17px; }
+.review-label { display: block; color: #6f9580; font-size: 10px; font-weight: 700; letter-spacing: .06em; margin-bottom: 8px; }
+.review-columns ul { margin: 0; padding-left: 17px; color: #6f7f75; font-size: 11px; line-height: 1.9; }
+.review-columns p { margin: 0 0 12px; color: #6f7f75; font-size: 11px; line-height: 1.8; }
+.review-opinion { color: #2f7055 !important; font-weight: 700; }
+
+@media (max-width: 720px) {
+  .review-columns { grid-template-columns: 1fr; gap: 15px; }
+}
