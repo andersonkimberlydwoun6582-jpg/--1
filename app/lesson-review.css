@@ -42,6 +42,24 @@
   color: #876b3e !important;
 }
 
+.lesson-review-violet {
+  border-color: #e1d9ec;
+  background: #f7f3fb;
+}
+
+.lesson-review-violet .review-tag {
+  background: #ebe3f4;
+  color: #765d91;
+}
+
+.lesson-review-violet .review-label {
+  color: #886fa1;
+}
+
+.lesson-review-violet .review-opinion {
+  color: #72558c !important;
+}
+
 .review-head {
   display: flex;
   align-items: flex-start;
