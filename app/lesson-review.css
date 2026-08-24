@@ -24,6 +24,24 @@
   color: #4d7896 !important;
 }
 
+.lesson-review-sand {
+  border-color: #eadfc9;
+  background: #fbf7ef;
+}
+
+.lesson-review-sand .review-tag {
+  background: #f2e8d4;
+  color: #8b7046;
+}
+
+.lesson-review-sand .review-label {
+  color: #a0885f;
+}
+
+.lesson-review-sand .review-opinion {
+  color: #876b3e !important;
+}
+
 .review-head {
   display: flex;
   align-items: flex-start;
