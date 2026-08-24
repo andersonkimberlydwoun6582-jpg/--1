@@ -6,6 +6,24 @@
   background: #f3f8f4;
 }
 
+.lesson-review-blue {
+  border-color: #d4e3ef;
+  background: #f2f7fb;
+}
+
+.lesson-review-blue .review-tag {
+  background: #e1edf6;
+  color: #4d7896;
+}
+
+.lesson-review-blue .review-label {
+  color: #668ca5;
+}
+
+.lesson-review-blue .review-opinion {
+  color: #4d7896 !important;
+}
+
 .review-head {
   display: flex;
   align-items: flex-start;
