@@ -60,6 +60,24 @@
   color: #72558c !important;
 }
 
+.lesson-review-rose {
+  border-color: #ecd7dc;
+  background: #fcf4f5;
+}
+
+.lesson-review-rose .review-tag {
+  background: #f3e1e5;
+  color: #9a5f70;
+}
+
+.lesson-review-rose .review-label {
+  color: #a87583;
+}
+
+.lesson-review-rose .review-opinion {
+  color: #96596b !important;
+}
+
 .review-head {
   display: flex;
   align-items: flex-start;
