@@ -159,6 +159,17 @@
 .api-mirror-images img { display: block; width: 100%; height: auto; border-radius: 6px; background: #edf3f8; }
 .api-mirror-images figcaption { padding: 7px 3px 2px; color: #718596; font-size: 10px; }
 
+.cost-inputs { display: flex; gap: 9px; flex-wrap: wrap; }
+.cost-inputs label { display: flex; align-items: center; gap: 5px; color: #748391; font-size: 10px; }
+.cost-inputs input { width: 48px; padding: 4px 5px; border: 1px solid #d9e3e9; border-radius: 5px; color: #4f6575; font-size: 10px; }
+.strategy-output { margin-top: 18px; padding: 22px; border: 1px solid #cfe1dd; border-radius: 16px; background: linear-gradient(135deg, #f3faf7, #ffffff 60%); }
+.strategy-output-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.strategy-output-head h3 { margin: 5px 0 6px; color: #205b4b; font-size: 18px; }
+.strategy-output-head p { margin: 0; color: #708277; font-size: 11px; line-height: 1.6; }
+.strategy-output-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+.strategy-output-actions button { white-space: nowrap; }
+.strategy-code-editor { display: block; width: 100%; min-height: 530px; margin-top: 17px; padding: 16px; resize: vertical; border: 1px solid #273e42; border-radius: 10px; background: #132b2c; color: #d7efea; font: 12px/1.65 Consolas, "Microsoft YaHei", monospace; box-sizing: border-box; outline: none; }
+
 @media (max-width: 720px) {
   .joinquant-static { padding: 18px; }
   .joinquant-static-head { flex-direction: column; }
@@ -174,4 +185,7 @@
   .api-mirror-images { grid-template-columns: 1fr; }
   .api-mirror-note { display: block; }
   .api-mirror-note strong { display: block; margin-bottom: 4px; }
+  .strategy-output-head { display: block; }
+  .strategy-output-actions { margin-top: 14px; }
+  .cost-inputs { margin-top: 8px; }
 }
