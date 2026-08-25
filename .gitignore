@@ -38,3 +38,7 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# Python validation artifacts
+__pycache__/
+*.py[cod]
