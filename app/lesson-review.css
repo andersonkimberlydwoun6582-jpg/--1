@@ -169,6 +169,17 @@
 .strategy-output-actions { display: flex; gap: 8px; flex: 0 0 auto; }
 .strategy-output-actions button { white-space: nowrap; }
 .strategy-code-editor { display: block; width: 100%; min-height: 530px; margin-top: 17px; padding: 16px; resize: vertical; border: 1px solid #273e42; border-radius: 10px; background: #132b2c; color: #d7efea; font: 12px/1.65 Consolas, "Microsoft YaHei", monospace; box-sizing: border-box; outline: none; }
+.wufu-case-study { margin-top: 18px; padding: 22px; border: 1px solid #ecd9c4; border-radius: 16px; background: linear-gradient(135deg, #fff9f1, #fff 62%); }
+.wufu-case-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.wufu-case-head h3 { margin: 5px 0 7px; color: #6d4b2e; font-size: 18px; }
+.wufu-case-head p { max-width: 720px; margin: 0; color: #88745f; font-size: 11px; line-height: 1.7; }
+.wufu-case-head a { flex: 0 0 auto; padding: 9px 12px; border-radius: 9px; background: #7a5534; color: #fff; font-size: 11px; text-decoration: none; }
+.wufu-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 18px; }
+.wufu-case-grid ol { margin: 0; padding-left: 18px; color: #786b5d; font-size: 11px; line-height: 1.9; }
+.wufu-case-grid p { margin: 0 0 12px; color: #786b5d; font-size: 11px; line-height: 1.8; }
+.wufu-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.wufu-tags span { padding: 5px 9px; border: 1px solid #ecd9c4; border-radius: 999px; background: #fff; color: #8a6849; font-size: 10px; }
+.wufu-code { margin-top: 18px; }
 
 @media (max-width: 720px) {
   .joinquant-static { padding: 18px; }
@@ -188,4 +199,7 @@
   .strategy-output-head { display: block; }
   .strategy-output-actions { margin-top: 14px; }
   .cost-inputs { margin-top: 8px; }
+  .wufu-case-head { display: block; }
+  .wufu-case-head a { display: inline-block; margin-top: 12px; }
+  .wufu-case-grid { grid-template-columns: 1fr; gap: 15px; }
 }
