@@ -27,6 +27,23 @@ const lessons = [
 
 const chart = [46, 52, 49, 57, 61, 59, 68, 73, 69, 78, 84, 91, 88, 96, 100];
 
+const joinQuantSections = [
+  { title: "课程结构", body: "因子数据获取 → 因子数据处理 → 有效性分析。原文把因子拆成财务因子、聚宽因子库因子、技术指标因子，以及用因子分析工具获取数据。" },
+  { title: "一、基础财务因子", body: "基础财务指标是上市公司基本面研究的底座，常见字段来自估值、资产负债表和利润表。财务数据按季度更新，适合长周期策略；查询连续多期数据时，需要设置字段、股票池、结束日期和 count。" },
+  { title: "二、聚宽因子库因子", body: "使用 get_factor_values 或聚宽因子库接口，先确定股票池和日期，再读取 ROE_TTM、营业利润等因子。时间和股票池必须显式传入，不能把空结果直接当成零。" },
+  { title: "三、技术指标因子", body: "原文用 BIAS 乖离率举例，通过 jqlib.technical_analysis 获取技术指标。技术指标本质是价格、成交量的变换，使用前要明确窗口长度、起止日期和缺失值处理。" },
+  { title: "四、因子分析与自定义因子", body: "可以继承 Factor 自定义因子，再用 analyze_factor 做分组、IC、IC 月度变化和分位数组合分析。示例使用 000016.XSHG、5 组分位数和 1/5/10 日持有期。" },
+  { title: "数据格式与判断标准", body: "研究结果通常是 DataFrame：index 是因子日期，columns 是股票代码，values 是因子值。示例 IC Mean 为 0.000、-0.012、-0.037；不能只看一个数字，要同时看 IC 波动、风险调整 IC、t-stat 和 p-value。" },
+];
+
+const joinQuantCode = `from jqfactor import *\nfrom jqdata import *\n\npool = get_index_stocks('000016.XSHG')\nfactor = get_factor_values(pool, ['roe_ttm'], date='2019-01-02')\n\n# 连续多期财务数据\nfactor_pb = get_fundamentals_continuously(\n    query(valuation.code, valuation.pb_ratio),\n    end_date=date_end, count=28\n)\n\n# 因子有效性分析\nfar = analyze_factor(\n    factor=factor_df, start_date=date_start, end_date=date_end,\n    weight_method='avg', universe='000016.XSHG',\n    industry='jq_l1', quantiles=5, periods=(1, 5, 10)\n)`;
+
+function BilibiliCourse() { return <><div className="page-heading"><div><p className="eyebrow">BILIBILI COURSE</p><h1>B站课程库</h1><p>108 集课程的观看记录、代码思路和我的复盘。聚宽内容单独放在另一个页面。</p></div><div className="progress-ring"><strong>22%</strong><span>已完成</span></div></div><div className="course-note"><div className="course-avatar">B</div><div><strong>参考课程：B站 Python 官方资源 · 量化交易教程</strong><p>这里保存平台、数据、策略、回测和实盘的课程笔记；后续实战会和聚宽知识一起调用。</p></div><a href="https://www.bilibili.com/video/BV1bXCTBGE42" target="_blank" rel="noreferrer">打开原课程 ↗</a></div><LessonReview /><LessonReviewTwo /><LessonReviewThree /><LessonReviewFour /><LessonReviewFive /><LessonReviewSix /><LessonReviewSeven /><LessonReviewEight /><LessonReviewNine /><KnowledgeBridge current="B站课程库" /><div className="lesson-list">{lessons.map((lesson, index) => <div className={`lesson-row ${index === 8 ? "current" : ""}`} key={lesson.n}><div className={`lesson-number ${lesson.color}`}>{lesson.n}</div><div className="lesson-info"><strong>{lesson.title}</strong><span>{lesson.desc}</span></div><div className="lesson-status">{lesson.state}{index < 9 && <i />}</div><button className="row-arrow">→</button></div>)}</div></>; }
+
+function JoinQuantCourse() { return <><div className="page-heading"><div><p className="eyebrow">JOINQUANT COURSE</p><h1>聚宽课程库</h1><p>独立保存聚宽《七、数据获取》的学习内容，不再依赖原站登录或 iframe。</p></div><div className="progress-ring joinquant-ring"><strong>01</strong><span>篇已固化</span></div></div><div className="course-note joinquant-course-note"><div className="course-avatar">JQ</div><div><strong>《七、数据获取》 · buoyant · 约 3 年前</strong><p>原文已读取并固化到本站；下面的正文、代码要点、数据格式和分析指标可直接查看。</p></div><a href="https://www.joinquant.com/view/community/detail/63c2508b996897cd0bdf2214dee9cde2" target="_blank" rel="noreferrer">查看来源 ↗</a></div><section className="joinquant-static"><div className="joinquant-static-head"><div><span className="review-label">LOCAL SNAPSHOT · NO LOGIN</span><h3>七、数据获取</h3><p>有了数据才能进行因子效果分析和模型搭建。文章把财务因子、量价因子、技术指标和因子分析方法串成一条研究链路。</p></div><span className="snapshot-badge">已固化到本站</span></div><div className="joinquant-section-grid">{joinQuantSections.map((section) => <article key={section.title}><h4>{section.title}</h4><p>{section.body}</p></article>)}</div><div className="joinquant-code"><div className="code-head"><span>研究代码摘录</span><span>可直接复制到聚宽研究环境核验</span></div><pre>{joinQuantCode}</pre></div></section><KnowledgeBridge current="聚宽课程库" /></>; }
+
+function KnowledgeBridge({ current }: { current: string }) { return <section className="knowledge-bridge"><div><span className="review-label">SHARED RESEARCH MEMORY</span><h3>两个平台，统一调用</h3><p>当前页面：{current}。后续做选股、因子、回测或实盘时，会同时参考 B 站课程的工程方法，以及聚宽课程的因子与数据方法，并标注来源。</p></div><div className="knowledge-bridge-tags"><span>B站：平台 / 策略 / 回测 / 实盘</span><span>聚宽：财务 / 因子 / 技术指标 / IC分析</span><span>共用：数据对齐 / 风险 / 日志 / 复盘</span></div></section>; }
+
 export default function Home() {
   const [active, setActive] = useState("总览");
   const [strategy, setStrategy] = useState<Strategy>("价值成长");
@@ -59,7 +76,8 @@ export default function Home() {
         </nav>
         <p className="nav-label learn-label">学习与资料</p>
         <nav className="nav-list">
-          <button className={`nav-item ${active === "学习路径" ? "active" : ""}`} onClick={() => setActive("学习路径")}><span className="nav-icon">▣</span>教程学习路径</button>
+          <button className={`nav-item ${active === "B站课程库" ? "active" : ""}`} onClick={() => setActive("B站课程库")}><span className="nav-icon">▣</span>B站课程库</button>
+          <button className={`nav-item ${active === "聚宽课程库" ? "active" : ""}`} onClick={() => setActive("聚宽课程库")}><span className="nav-icon">◇</span>聚宽课程库</button>
           <button className="nav-item"><span className="nav-icon">◇</span>因子库 <span className="soon">Soon</span></button>
           <button className="nav-item"><span className="nav-icon">⚙</span>数据设置</button>
         </nav>
@@ -73,7 +91,7 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {active === "学习路径" ? <LearningPath /> : active === "股票筛选" ? <Screener query={query} setQuery={setQuery} filteredStocks={filteredStocks} saved={saved} toggleSaved={toggleSaved} /> : active === "回测实验室" ? <Backtest strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} /> : <Overview onOpen={(item) => setActive(item)} strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} />}
+          {active === "B站课程库" ? <BilibiliCourse /> : active === "聚宽课程库" ? <JoinQuantCourse /> : active === "股票筛选" ? <Screener query={query} setQuery={setQuery} filteredStocks={filteredStocks} saved={saved} toggleSaved={toggleSaved} /> : active === "回测实验室" ? <Backtest strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} /> : <Overview onOpen={(item) => setActive(item)} strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} />}
         </div>
       </section>
     </main>
@@ -82,12 +100,12 @@ export default function Home() {
 
 function Overview({ onOpen, strategy, setStrategy, running, setRunning }: { onOpen: (item: string) => void; strategy: Strategy; setStrategy: (value: Strategy) => void; running: boolean; setRunning: (value: boolean) => void }) {
   return <>
-    <div className="hero-row"><div><p className="eyebrow">MONDAY · 2026.08.24</p><h1>把每一次判断，<em>变成可验证的策略。</em></h1><p className="hero-copy">从教程里的知识点，到你自己的研究结论。这里是一个只属于你的 A 股量化工作台。</p></div><div className="hero-actions"><button className="secondary-button" onClick={() => onOpen("学习路径")}>继续学习 <span>→</span></button><button className="primary-button" onClick={() => onOpen("股票筛选")}>开始选股 <span>↗</span></button></div></div>
+    <div className="hero-row"><div><p className="eyebrow">MONDAY · 2026.08.24</p><h1>把每一次判断，<em>变成可验证的策略。</em></h1><p className="hero-copy">从教程里的知识点，到你自己的研究结论。这里是一个只属于你的 A 股量化工作台。</p></div><div className="hero-actions"><button className="secondary-button" onClick={() => onOpen("B站课程库")}>继续学习 <span>→</span></button><button className="primary-button" onClick={() => onOpen("股票筛选")}>开始选股 <span>↗</span></button></div></div>
     <div className="insight-card"><div className="insight-icon">✦</div><div><span className="card-kicker">今日研究提示 · 基于教程第 37–42 节</span><h3>先控制回撤，再追求收益。</h3><p>把质量、估值和趋势拆开观察，避免只用单一技术指标做决定。</p></div><button className="text-button" onClick={() => onOpen("回测实验室")}>去实验室验证 →</button></div>
     <div className="section-heading"><div><p className="eyebrow">RESEARCH SNAPSHOT</p><h2>研究概览</h2></div><span className="muted">数据更新于 08:56 · 示例数据</span></div>
     <div className="metric-grid"><Metric label="策略组合净值" value="1.284" delta="+28.4%" note="过去 12 个月" positive /><Metric label="最大回撤" value="-8.7%" delta="↓ 2.1%" note="较上月改善" positive /><Metric label="今日候选" value="12" delta="+4" note="符合当前筛选器" positive /><Metric label="学习进度" value="24 / 108" delta="22%" note="已完成 24 个章节" /></div>
     <div className="dashboard-grid"><div className="panel performance-panel"><div className="panel-head"><div><p className="eyebrow">PORTFOLIO CURVE</p><h3>策略净值走势</h3></div><div className="segmented"><button className="selected">1Y</button><button>6M</button><button>1M</button></div></div><div className="chart-wrap"><div className="y-labels"><span>1.30</span><span>1.20</span><span>1.10</span><span>1.00</span></div><div className="bar-chart">{chart.map((height, index) => <div className="chart-col" key={index}><div className="bar" style={{ height: `${height}%` }} /><span>{index % 3 === 0 ? ["08/25", "11/25", "02/26", "05/26", "08/26"][index / 3] : ""}</span></div>)}</div></div><div className="chart-legend"><span><i className="legend-dot primary" />我的组合 <strong>+28.4%</strong></span><span><i className="legend-dot gray" />沪深 300 <strong className="dark">+11.6%</strong></span></div></div><div className="panel strategy-panel"><div className="panel-head"><div><p className="eyebrow">ACTIVE STRATEGY</p><h3>当前策略</h3></div><button className="dots">•••</button></div><div className="strategy-name"><span className="strategy-mark">◒</span><div><strong>{strategy}</strong><span>多因子 · 周频调仓</span></div><span className="live-tag">运行中</span></div><div className="factor-list"><div><span>价值因子</span><strong>30%</strong><div className="progress"><i style={{ width: "30%" }} /></div></div><div><span>质量因子</span><strong>40%</strong><div className="progress"><i style={{ width: "40%" }} /></div></div><div><span>趋势因子</span><strong>30%</strong><div className="progress"><i style={{ width: "30%" }} /></div></div></div><button className={`run-button ${running ? "running" : ""}`} onClick={() => { setRunning(true); setTimeout(() => setRunning(false), 1200); }}>{running ? "正在运行回测…" : "运行一次回测"}<span>→</span></button></div></div>
-    <div className="section-heading lower"><div><p className="eyebrow">LEARNING PATH</p><h2>教程 → 工具</h2></div><button className="text-button" onClick={() => onOpen("学习路径")}>查看完整路径 →</button></div>
+    <div className="section-heading lower"><div><p className="eyebrow">LEARNING PATH</p><h2>教程 → 工具</h2></div><button className="text-button" onClick={() => onOpen("B站课程库")}>查看完整路径 →</button></div>
     <div className="lesson-grid">{lessons.slice(0, 3).map((lesson) => <LessonCard key={lesson.n} lesson={lesson} />)}</div>
   </>;
 }
