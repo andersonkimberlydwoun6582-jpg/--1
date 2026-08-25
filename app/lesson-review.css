@@ -118,6 +118,8 @@
 }
 
 .joinquant-static { margin-top: 18px; padding: 24px; border: 1px solid #d8e3ef; border-radius: 16px; background: #fff; }
+.joinquant-course-note { flex-wrap: wrap; }
+.joinquant-course-note a + a { margin-left: 0; }
 .joinquant-static-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
 .joinquant-static-head h3 { margin: 5px 0 8px; color: #183550; font-size: 22px; }
 .joinquant-static-head p { max-width: 720px; margin: 0; color: #6d7c8b; font-size: 12px; line-height: 1.8; }
