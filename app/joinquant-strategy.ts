@@ -17,6 +17,220 @@ const safeNumber = (value: string, fallback: number, min: number, max: number) =
   return Math.min(max, Math.max(min, parsed));
 };
 
+const buildAShareStrategy = (
+  config: StrategyConfig,
+  maxPosition: number,
+  commission: number,
+  stampDuty: number,
+  slippage: number,
+) => {
+  const schedule = config.frequency === "日频"
+    ? "run_daily(rebalance, time='10:00', reference_security=g.benchmark)"
+    : config.frequency === "月频"
+      ? "run_monthly(rebalance, monthday=1, time='10:00', reference_security=g.benchmark)"
+      : "run_weekly(rebalance, weekday=1, time='10:00', reference_security=g.benchmark)";
+
+  return `# -*- coding: utf-8 -*-
+# 聚宽策略：A 股多因子优化版 v2
+# 配置：${config.period}｜${config.frequency}｜初始资金 ${config.initialCash}
+# 研究用途，不承诺跑赢指数；请做训练期、验证期和样本外测试。
+
+from jqdata import *
+import datetime as dt
+import numpy as np
+import pandas as pd
+
+
+def initialize(context):
+    g.benchmark = '${config.benchmark}'
+    g.target_count = 10
+    g.single_position_cap = ${maxPosition.toFixed(4)}
+    g.min_rebalance_gap = 0.02
+    g.full_exposure = 1.00
+    g.defensive_exposure = 0.50
+
+    set_benchmark(g.benchmark)
+    set_option('avoid_future_data', True)
+    set_option('use_real_price', True)
+    set_order_cost(OrderCost(
+        open_tax=0,
+        close_tax=${stampDuty.toFixed(6)},
+        open_commission=${commission.toFixed(6)},
+        close_commission=${commission.toFixed(6)},
+        min_commission=5
+    ), type='stock')
+    set_slippage(PriceRelatedSlippage(${slippage.toFixed(6)}), type='stock')
+    set_log_level('order', 'error')
+    ${schedule}
+    run_daily(cancel_unfilled_orders, time='14:50', reference_security=g.benchmark)
+    run_daily(after_close_audit, time='after_close', reference_security=g.benchmark)
+
+
+def market_exposure(context):
+    bars = attribute_history(
+        g.benchmark, 121, '1d', ['close'],
+        skip_paused=False, df=True, fq='pre'
+    )
+    if bars is None or len(bars) < 121:
+        return g.defensive_exposure
+    last_close = float(bars['close'].iloc[-1])
+    ma120 = float(bars['close'].iloc[-120:].mean())
+    return g.full_exposure if last_close >= ma120 else g.defensive_exposure
+
+
+def build_stock_pool(context):
+    universe = get_index_stocks(g.benchmark, date=context.previous_date)
+    current_data = get_current_data()
+    all_stocks = get_all_securities(types=['stock'], date=context.previous_date)
+    listing_cutoff = context.previous_date - dt.timedelta(days=180)
+    pool = []
+    for stock in universe:
+        if stock not in all_stocks.index or stock not in current_data:
+            continue
+        if all_stocks.loc[stock, 'start_date'] > listing_cutoff:
+            continue
+        snapshot = current_data[stock]
+        name = snapshot.name or ''
+        if snapshot.paused or snapshot.is_st or 'ST' in name or '退' in name:
+            continue
+        if not np.isfinite(snapshot.last_price) or snapshot.last_price <= 0:
+            continue
+        if snapshot.last_price >= snapshot.high_limit or snapshot.last_price <= snapshot.low_limit:
+            continue
+        pool.append(stock)
+    return pool
+
+
+def get_factor_table(context, pool):
+    if not pool:
+        return pd.DataFrame()
+    q = query(
+        valuation.code, valuation.pe_ratio, valuation.pb_ratio,
+        valuation.market_cap, indicator.roe
+    ).filter(
+        valuation.code.in_(pool),
+        valuation.pe_ratio > 0, valuation.pe_ratio < 60,
+        valuation.pb_ratio > 0, valuation.pb_ratio < 8,
+        valuation.market_cap > 30, indicator.roe > 8
+    )
+    fundamental = get_fundamentals(q, date=context.previous_date)
+    if fundamental is None or fundamental.empty:
+        return pd.DataFrame()
+
+    fundamental = fundamental.drop_duplicates('code').set_index('code')
+    candidates = list(fundamental.index)
+    prices = history(
+        61, unit='1d', field='close', security_list=candidates,
+        df=True, skip_paused=False, fq='pre'
+    )
+    if prices is None or prices.empty:
+        return pd.DataFrame()
+
+    rows = []
+    for stock in candidates:
+        if stock not in prices.columns:
+            continue
+        close = prices[stock].dropna()
+        if len(close) < 55 or close.iloc[0] <= 0:
+            continue
+        momentum = close.iloc[-6] / close.iloc[0] - 1
+        daily_return = close.pct_change().replace([np.inf, -np.inf], np.nan).dropna()
+        volatility = daily_return.std() * np.sqrt(250)
+        if not np.isfinite(momentum) or not np.isfinite(volatility):
+            continue
+        item = fundamental.loc[stock]
+        rows.append({
+            'code': stock,
+            'pe': float(item['pe_ratio']),
+            'pb': float(item['pb_ratio']),
+            'roe': float(item['roe']),
+            'momentum': float(momentum),
+            'volatility': float(volatility),
+        })
+    return pd.DataFrame(rows).set_index('code') if rows else pd.DataFrame()
+
+
+def percentile_score(series, higher_is_better=True):
+    clean = series.replace([np.inf, -np.inf], np.nan)
+    low, high = clean.quantile(0.05), clean.quantile(0.95)
+    score = clean.clip(lower=low, upper=high).rank(pct=True)
+    return score if higher_is_better else 1 - score
+
+
+def select_stocks(context):
+    factors = get_factor_table(context, build_stock_pool(context))
+    if factors.empty or len(factors) < g.target_count:
+        log.warn('有效候选不足，本期不调仓：%s', len(factors))
+        return []
+    factors['value'] = (
+        percentile_score(factors['pe'], False) * 0.5
+        + percentile_score(factors['pb'], False) * 0.5
+    )
+    factors['quality'] = percentile_score(factors['roe'], True)
+    factors['momentum_score'] = percentile_score(factors['momentum'], True)
+    factors['low_vol'] = percentile_score(factors['volatility'], False)
+    factors['total'] = (
+        factors['value'] * 0.25
+        + factors['quality'] * 0.30
+        + factors['momentum_score'] * 0.30
+        + factors['low_vol'] * 0.15
+    )
+    return list(factors.sort_values('total', ascending=False).head(g.target_count).index)
+
+
+def rebalance(context):
+    targets = select_stocks(context)
+    if not targets:
+        return
+    exposure = market_exposure(context)
+    total_value = context.portfolio.total_value
+    target_value = min(
+        total_value * g.single_position_cap,
+        total_value * exposure / len(targets)
+    )
+    current_data = get_current_data()
+
+    for stock, position in list(context.portfolio.positions.items()):
+        if stock in targets:
+            continue
+        if position.closeable_amount <= 0:
+            log.warn('不可卖出（可卖数量为 0）：%s', stock)
+            continue
+        if current_data[stock].last_price <= current_data[stock].low_limit:
+            log.warn('跌停无法卖出：%s', stock)
+            continue
+        if order_target_value(stock, 0) is None:
+            log.warn('卖出订单未创建：%s', stock)
+
+    for stock in targets:
+        snapshot = current_data[stock]
+        if snapshot.paused or snapshot.last_price >= snapshot.high_limit:
+            continue
+        position = context.portfolio.positions.get(stock)
+        current_value = position.value if position is not None else 0
+        if abs(target_value - current_value) < total_value * g.min_rebalance_gap:
+            continue
+        if order_target_value(stock, target_value) is None:
+            log.warn('买入/调仓订单未创建：%s', stock)
+
+    record(target_count=len(targets), target_exposure=exposure)
+
+
+def cancel_unfilled_orders(context):
+    for order_id, order in get_open_orders().items():
+        cancel_order(order)
+        log.warn('收盘前撤销未成交订单：%s %s', order_id, order.security)
+
+
+def after_close_audit(context):
+    log.info(
+        '收盘审计：订单 %s 笔，成交 %s 笔，持仓 %s 只，总资产 %.2f',
+        len(get_orders()), len(get_trades()), len(context.portfolio.positions),
+        context.portfolio.total_value
+    )
+`;
+};
+
 const buildWufuStrategy = (config: StrategyConfig, commission: number, slippage: number) => `# 聚宽教学案例：五福融合改 · 走弱期日内双选版
 # 来源：用户提供的聚宽文章《别再成为别人的五福提款机》
 # 学习配置：区间 ${config.period}｜初始资金 ${config.initialCash}
@@ -158,6 +372,9 @@ export function buildJoinQuantStrategy(strategy: Strategy, config: StrategyConfi
   const commission = safeNumber(config.commission, 0.03, 0, 1) / 100;
   const stampDuty = safeNumber(config.stampDuty, 0.05, 0, 1) / 100;
   const slippage = safeNumber(config.slippage, 0.1, 0, 5) / 100;
+  if (strategy === "A股多因子优化版") {
+    return buildAShareStrategy(config, maxPosition, commission, stampDuty, slippage);
+  }
   if (strategy === "五福融合改") return buildWufuStrategy(config, commission, slippage);
   const schedule = config.frequency === "日频"
     ? "run_daily(rebalance, time='09:35')"
