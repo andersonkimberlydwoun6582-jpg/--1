@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import "./lesson-review.css";
+import { apiMirrorSections } from "./api-mirror-data";
 
 type Strategy = "价值成长" | "趋势择时" | "低波红利";
 
@@ -42,6 +43,22 @@ function BilibiliCourse() { return <><div className="page-heading"><div><p class
 
 function JoinQuantCourse() { return <><div className="page-heading"><div><p className="eyebrow">JOINQUANT COURSE</p><h1>聚宽课程库</h1><p>独立保存聚宽《七、数据获取》的学习内容，不再依赖原站登录或 iframe。</p></div><div className="progress-ring joinquant-ring"><strong>01</strong><span>篇已固化</span></div></div><div className="course-note joinquant-course-note"><div className="course-avatar">JQ</div><div><strong>《七、数据获取》 · buoyant · 约 3 年前</strong><p>原文已读取并固化到本站；下面的正文、代码要点、数据格式和分析指标可直接查看。</p></div><a href="https://www.joinquant.com/view/community/detail/63c2508b996897cd0bdf2214dee9cde2" target="_blank" rel="noreferrer">查看来源 ↗</a><a href="/joinquant-snapshot.html" target="_blank" rel="noreferrer">完整快照 ↗</a></div><section className="joinquant-static"><div className="joinquant-static-head"><div><span className="review-label">LOCAL SNAPSHOT · NO LOGIN</span><h3>七、数据获取</h3><p>有了数据才能进行因子效果分析和模型搭建。文章把财务因子、量价因子、技术指标和因子分析方法串成一条研究链路。</p></div><span className="snapshot-badge">已固化到本站</span></div><div className="joinquant-section-grid">{joinQuantSections.map((section) => <article key={section.title}><h4>{section.title}</h4><p>{section.body}</p></article>)}</div><div className="joinquant-code"><div className="code-head"><span>研究代码摘录</span><span>可直接复制到聚宽研究环境核验</span></div><pre>{joinQuantCode}</pre></div></section><KnowledgeBridge current="聚宽课程库" /></>; }
 
+function JoinQuantApiMirror() {
+  const groups = [...new Set(apiMirrorSections.map((section) => section.group))];
+  return <>
+    <div className="page-heading"><div><p className="eyebrow">JOINQUANT API · PERSONAL MIRROR</p><h1>聚宽 API 学习镜像</h1><p>按官方文档的目录顺序整理：结构和配图位置对应原文，正文是我的学习复述，方便后续实战统一调用。</p></div><div className="progress-ring joinquant-ring"><strong>{apiMirrorSections.length}</strong><span>个章节</span></div></div>
+    <div className="course-note joinquant-course-note"><div className="course-avatar">API</div><div><strong>来源：聚宽 API 文档</strong><p>这是个人学习镜像，不替代官方文档；接口版本、权限和运行环境以官方说明为准。</p></div><a href="https://www.joinquant.com/help/api/help#name:api" target="_blank" rel="noreferrer">打开官方文档 ↗</a><a href="/joinquant-snapshot.html" target="_blank" rel="noreferrer">查看本地快照 ↗</a></div>
+    <div className="api-mirror-shell">
+      <aside className="api-mirror-toc"><div className="api-mirror-toc-title">目录镜像</div>{groups.map((group) => <div key={group} className="api-mirror-group"><span>{group}</span>{apiMirrorSections.filter((section) => section.group === group).map((section) => <a key={section.key} href={`#api-${section.key}`}>{section.title}</a>)}</div>)}</aside>
+      <main className="api-mirror-body">
+        <div className="api-mirror-note"><strong>阅读方式</strong><span>先看章节摘要，再按图片、代码和原文链接核验；以后做策略时，数据、生命周期、订单和风险四层一起调用。</span></div>
+        {apiMirrorSections.map((section, index) => <section className="api-mirror-section" id={`api-${section.key}`} key={section.key}><div className="api-mirror-section-head"><span className="api-mirror-index">{String(index + 1).padStart(2, "0")}</span><div><span className="review-label">{section.group}</span><h2>{section.title}</h2></div></div><p className="api-mirror-summary">{section.summary}</p><ul>{section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>{section.images && <div className="api-mirror-images">{section.images.map((image) => <figure key={image.src}><img src={image.src} alt={image.alt} loading="lazy" referrerPolicy="no-referrer" /><figcaption>{image.caption}</figcaption></figure>)}</div>}</section>)}
+      </main>
+    </div>
+    <KnowledgeBridge current="聚宽 API 镜像" />
+  </>;
+}
+
 function KnowledgeBridge({ current }: { current: string }) { return <section className="knowledge-bridge"><div><span className="review-label">SHARED RESEARCH MEMORY</span><h3>两个平台，统一调用</h3><p>当前页面：{current}。后续做选股、因子、回测或实盘时，会同时参考 B 站课程的工程方法，以及聚宽课程的因子与数据方法，并标注来源。</p></div><div className="knowledge-bridge-tags"><span>B站：平台 / 策略 / 回测 / 实盘</span><span>聚宽：财务 / 因子 / 技术指标 / IC分析</span><span>共用：数据对齐 / 风险 / 日志 / 复盘</span></div></section>; }
 
 export default function Home() {
@@ -78,6 +95,7 @@ export default function Home() {
         <nav className="nav-list">
           <button className={`nav-item ${active === "B站课程库" ? "active" : ""}`} onClick={() => setActive("B站课程库")}><span className="nav-icon">▣</span>B站课程库</button>
           <button className={`nav-item ${active === "聚宽课程库" ? "active" : ""}`} onClick={() => setActive("聚宽课程库")}><span className="nav-icon">◇</span>聚宽课程库</button>
+          <button className={`nav-item ${active === "聚宽 API 镜像" ? "active" : ""}`} onClick={() => setActive("聚宽 API 镜像")}><span className="nav-icon">▤</span>聚宽 API 镜像</button>
           <button className="nav-item"><span className="nav-icon">◇</span>因子库 <span className="soon">Soon</span></button>
           <button className="nav-item"><span className="nav-icon">⚙</span>数据设置</button>
         </nav>
@@ -91,7 +109,7 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {active === "B站课程库" ? <BilibiliCourse /> : active === "聚宽课程库" ? <JoinQuantCourse /> : active === "股票筛选" ? <Screener query={query} setQuery={setQuery} filteredStocks={filteredStocks} saved={saved} toggleSaved={toggleSaved} /> : active === "回测实验室" ? <Backtest strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} /> : <Overview onOpen={(item) => setActive(item)} strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} />}
+          {active === "B站课程库" ? <BilibiliCourse /> : active === "聚宽课程库" ? <JoinQuantCourse /> : active === "聚宽 API 镜像" ? <JoinQuantApiMirror /> : active === "股票筛选" ? <Screener query={query} setQuery={setQuery} filteredStocks={filteredStocks} saved={saved} toggleSaved={toggleSaved} /> : active === "回测实验室" ? <Backtest strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} /> : <Overview onOpen={(item) => setActive(item)} strategy={strategy} setStrategy={setStrategy} running={running} setRunning={setRunning} />}
         </div>
       </section>
     </main>
