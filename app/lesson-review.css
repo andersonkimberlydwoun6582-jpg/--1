@@ -96,3 +96,23 @@
 @media (max-width: 720px) {
   .review-columns { grid-template-columns: 1fr; gap: 15px; }
 }
+
+.joinquant-reference { margin-top: 22px; padding: 26px; border: 1px solid #d9e2ee; border-radius: 18px; background: linear-gradient(135deg, #f7fbff 0%, #ffffff 58%); box-shadow: 0 14px 36px rgba(36, 70, 110, .08); }
+.joinquant-reference-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.joinquant-reference-head h3 { margin: 6px 0 8px; color: #17324d; }
+.joinquant-reference-head p { margin: 0; color: #6f7f91; font-size: 14px; }
+.joinquant-reference-head a { flex: 0 0 auto; padding: 10px 14px; border-radius: 10px; background: #17324d; color: #fff; font-size: 13px; text-decoration: none; }
+.joinquant-summary { margin: 20px 0; padding: 16px 18px; border-radius: 12px; background: #eef6ff; color: #52677d; line-height: 1.7; }
+.joinquant-summary p { margin: 7px 0 12px; }
+.joinquant-points { display: flex; flex-wrap: wrap; gap: 8px; }
+.joinquant-points span { padding: 5px 10px; border: 1px solid #cfe0f2; border-radius: 999px; background: #fff; color: #35638d; font-size: 12px; }
+.joinquant-frame-wrap { overflow: hidden; border: 1px solid #d8e0e9; border-radius: 12px; background: #fff; }
+.joinquant-frame-wrap iframe { display: block; width: 100%; height: 920px; border: 0; background: #fff; }
+.joinquant-fallback { margin: 10px 0 0; color: #8694a2; font-size: 12px; }
+
+@media (max-width: 720px) {
+  .joinquant-reference { padding: 18px; }
+  .joinquant-reference-head { flex-direction: column; }
+  .joinquant-reference-head a { align-self: flex-start; }
+  .joinquant-frame-wrap iframe { height: 720px; }
+}
